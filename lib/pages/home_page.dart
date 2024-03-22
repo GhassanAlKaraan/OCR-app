@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:ocr_app/result_page.dart';
+import 'package:ocr_app/network/http_service.dart';
+import 'package:ocr_app/pages/result_page.dart';
 
-import './utils.dart' as utils;
+import '../utils/utils.dart' as utils;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,6 +18,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   File? _imageFile;
   bool _isLoading = false;
+
+  MyHttpService service = MyHttpService();
 
   Future<void> _takeImage() async {
     final pickedFile =
@@ -71,6 +74,29 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _processArabicImage() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final inputImage = _imageFile!;
+
+    final generatedText = await service.analyzeImage(inputImage);
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (context.mounted) {
+      Navigator.push(
+        // ignore: use_build_context_synchronously
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResultPage(result: generatedText),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,7 +126,7 @@ class _HomePageState extends State<HomePage> {
                             Image.file(_imageFile!),
                             _isLoading
                                 ? const CircularProgressIndicator(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                   )
                                 : Container()
                           ]),
@@ -148,11 +174,6 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
               const SizedBox(height: 20),
-              // ElevatedButton(
-              //     onPressed:
-              //         _isLoading || (_imageFile == null) ? null : _processImage,
-              //     child: const Text('Process Text')),
-              // const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: GestureDetector(
@@ -177,7 +198,7 @@ class _HomePageState extends State<HomePage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Process Image',
+                          'Google MLKit - English',
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -186,8 +207,43 @@ class _HomePageState extends State<HomePage> {
                         SizedBox(width: 10),
                         Icon(Icons.arrow_forward_ios,
                             color: Colors.white, size: 20),
-                        Icon(Icons.arrow_forward_ios,
-                            color: Colors.white, size: 20),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: GestureDetector(
+                  onTap: () {
+                    _isLoading || (_imageFile == null)
+                        ? utils.showAlert(
+                            context, "Please select an image first")
+                        : _processArabicImage();
+                  },
+                  child: Container(
+                    height: 50,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        gradient: LinearGradient(colors: [
+                          Colors.orange[800]!,
+                          Colors.orange[800]!,
+                          // Colors.green,
+                          Colors.cyan,
+                        ])),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'OCR API - English + Arabic',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16),
+                        ),
+                        SizedBox(width: 10),
                         Icon(Icons.arrow_forward_ios,
                             color: Colors.white, size: 20),
                       ],

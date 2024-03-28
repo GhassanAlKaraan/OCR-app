@@ -7,7 +7,7 @@ import 'package:http_parser/http_parser.dart';
 
 class MyHttpService {
 
-  // This is a free key, generate yourse here: https://ocr.space/OCRAPI
+  // This is a free key, generate your own free key here: https://ocr.space/OCRAPI
   final String apiKey = "K89408679188957";
   final String ocrUri = "https://api.ocr.space/parse/image";
 
